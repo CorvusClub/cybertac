@@ -16,6 +16,10 @@ import browserSync from "browser-sync";
 
 import uglify from "gulp-uglify";
 
+import awspublish from "gulp-awspublish";
+import rename from "gulp-rename";
+import path from "path";
+
 function javascript() {
   return rollup({
     input: './src/index.js',
@@ -83,6 +87,29 @@ function reload() {
   return Promise.resolve();
 }
 
+function deploy() {
+  const config = require("./config.json");
+
+  let publisher = awspublish.create({
+    endpoint: 'https://nyc3.digitaloceanspaces.com',
+    params: {
+      Bucket: 'cybertac',
+    },
+    accessKeyId: config.ACCESS_KEY_ID,
+    secretAccessKey: config.SECRET_ACCESS_KEY,
+  });
+
+  
+
+  return gulp.src("./dist/**/*")
+    .pipe(rename(file => {
+      file.dirname = path.join("production/", file.dirname);
+    }))
+    .pipe(awspublish.gzip({level: 9}))
+    .pipe(publisher.publish())
+    .pipe(awspublish.reporter());
+}
+
 function watch() {
   gulp.watch("./src/**/*.css", css);
   gulp.watch("./src/**/*.html", gulp.series(html, reload));
@@ -106,3 +133,5 @@ gulp.task("build", gulp.parallel(javascript, html, css));
 gulp.task(watch);
 
 gulp.task("dev", gulp.series("build", gulp.parallel(watch, serve)));
+
+gulp.task(deploy);
