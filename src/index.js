@@ -8,41 +8,72 @@ loader.classList.add("hide");
 
 import { World } from "./world";
 
-let world = new World();
+import Input from "./lib/input";
 
-window.addEventListener("resize", function() {
-  world.fitToScreen();
-});
+const CAMERA_ZOOM_SPEED = 0.1;
+const CAMERA_MIN_DISTANCE = 15;
+const CAMERA_MAX_DISTANCE = 60;
 
-import {
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh
-} from "three";
+class Game {
+  constructor(container) {
+    this.world = new World();
+    window.addEventListener("resize", () => {
+      this.world.fitToScreen();
+    });
 
-let cube;
-function buildEnvironment() {
-  const geometry = new BoxGeometry(1, 1, 1);
-  const material = new MeshBasicMaterial({color: 0xff0000});
-  cube = new Mesh(geometry, material);
+    requestAnimationFrame(this.animationFrame.bind(this));
+    
+    container.appendChild(this.world.renderer.domElement);
 
-  world.scene.add(cube);
+    Input.on("scrollup", distance => {
+      let newDist = this.world.distance + this.world.distance * CAMERA_ZOOM_SPEED;
+      if(newDist < CAMERA_MIN_DISTANCE) {
+        newDist = CAMERA_MIN_DISTANCE;
+      }
+      if(newDist > CAMERA_MAX_DISTANCE) {
+        newDist = CAMERA_MAX_DISTANCE;
+      }
+      this.world.distance = newDist;
+    });
+    Input.on("scrolldown", distance => {
+      let newDist = this.world.distance - this.world.distance * CAMERA_ZOOM_SPEED;
+      if(newDist < CAMERA_MIN_DISTANCE) {
+        newDist = CAMERA_MIN_DISTANCE;
+      }
+      if(newDist > CAMERA_MAX_DISTANCE) {
+        newDist = CAMERA_MAX_DISTANCE;
+      }
+      this.world.distance = newDist;
+    });
+    Input.on("rotateRightPress", () => {
+      this.world.rotateCamera(1);
+    });
+    Input.on("rotateLeftPress", () => {
+      this.world.rotateCamera(-1);
+    });
+  }
 
-  world.camera.position.z = 5;
+ animationFrame(dt) {
+    requestAnimationFrame(this.animationFrame.bind(this));
+    
+    this.world.animationFrame(dt);
+  }
 }
 
-function animationFrame(dt) {
-  requestAnimationFrame(animationFrame);
-
-  cube.rotation.x += 0.1;
-  cube.rotation.y += 0.1;
-  
-  world.animationFrame(dt);
+async function setupFeatherIcons() {
+  if(window.feather) {
+    window.feather.replace();
+  }
+  else {
+    await new Promise(resolve => {
+      document.getElementById("feather-script").addEventListener("load", resolve);
+    });
+    window.feather.replace();
+  }
 }
 
+let game = new Game(container);
 
-buildEnvironment();
+window.gameDebug = game;
 
-requestAnimationFrame(animationFrame);
-
-container.appendChild(world.renderer.domElement);
+setupFeatherIcons();

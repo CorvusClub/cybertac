@@ -1,6 +1,9 @@
 <!doctype html>
 <html>
   <head>
+    <meta name="HandheldFriendly" content="true">
+    <meta name="MobileOptimized" content="width">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no">
     <title>cybertac</title>
   </head>
   <body>
@@ -17,7 +20,17 @@
       <div id="loader">
         LOADING
       </div>
+      <div id="ui">
+        <button id="rotateLeft" class="rotateButton">
+          <i data-feather="rotate-ccw"></i>
+        </button>
+        <button id="rotateRight" class="rotateButton">
+          <i data-feather="rotate-cw"></i>
+        </button>
+      </div>
+      <canvas id="display"></canvas>
     </div>
     <link rel="stylesheet" type="text/css" href="./index.css"></link>
+    <script id="feather-script" src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js" async></script>
   </body>
 </html>

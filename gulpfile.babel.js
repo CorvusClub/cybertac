@@ -3,6 +3,7 @@ import gulp from "gulp";
 import rollup from "rollup-stream";
 import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
+import builtins from 'rollup-plugin-node-builtins';
 
 import sourcemaps from "gulp-sourcemaps";
 
@@ -11,6 +12,7 @@ import buffer from "vinyl-buffer";
 
 import postcss from "gulp-postcss";
 import autoprefixer from "autoprefixer";
+import postcssImport from "postcss-import";
 
 import browserSync from "browser-sync";
 
@@ -28,7 +30,9 @@ function javascript() {
     plugins: [
       resolve({
         jsnext: true,
+        preferBuiltins: true,
       }),
+      builtins(),
       babel({
         exclude: "./node_modules/**",
         babelrc: false,
@@ -36,6 +40,9 @@ function javascript() {
           ["env", {
             "modules": false,
           }],
+        ],
+        plugins: [
+          "external-helpers"
         ],
       }),
     ],
@@ -62,10 +69,11 @@ function html() {
 }
 
 function css() {
-  return gulp.src("./src/**/*.css")
+  return gulp.src("./src/**/index.css")
     .pipe(sourcemaps.init())
     .pipe(postcss([
       autoprefixer(),
+      postcssImport(),
     ]))
     .on("error", function(err) {
       console.error(err.stack);
