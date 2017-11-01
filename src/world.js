@@ -9,6 +9,7 @@ import {
   Mesh,
   Cylindrical,
   Vector3,
+  Raycaster,
 } from "three";
 
 import { Easing, Interpolation, Tween, autoPlay as autoPlayTweenAnimations } from 'es6-tween/src/index.lite';
@@ -78,6 +79,36 @@ class World {
       GRID_UNIT_SIZE / 2,
       -translatedX,
     );
+  }
+  translateWorldPosToGridPos(worldPos) {
+    let gridCenterOffset = GRID_UNIT_SIZE / 2;
+    let widthOffset = (GRID_WIDTH * GRID_UNIT_SIZE) / 2;
+    let heightOffset = (GRID_HEIGHT * GRID_UNIT_SIZE) / 2;
+
+    let x = worldPos.z * -1;
+    let y = worldPos.x;
+
+    x += widthOffset;
+    y += heightOffset;
+
+    x = Math.floor(x / GRID_UNIT_SIZE);
+    y = Math.floor(y / GRID_UNIT_SIZE);
+
+    return {x, y};
+  }
+
+  getWorldPosFromMousePos(mouseX, mouseY) {
+    let mouseVector = new Vector3();
+    mouseVector.x = 2 * (mouseX / this.renderer.domElement.width) - 1;
+    mouseVector.y = 1 - 2 * (mouseY / this.renderer.domElement.height);
+
+    let raycaster = new Raycaster();
+    raycaster.setFromCamera(mouseVector, this.camera);
+    let intersection = raycaster.intersectObjects([this.grid]);
+    if(intersection.length === 0) {
+      return false;
+    }
+    return intersection[0].point;
   }
 
   updateCameraAspect() {

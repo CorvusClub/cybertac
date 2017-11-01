@@ -51,6 +51,16 @@ class Game {
     Input.on("rotateLeftPress", () => {
       this.world.rotateCamera(-1);
     });
+
+    Input.on("mousedown", () => {
+      let clickPoint = this.world.getWorldPosFromMousePos(Input.mouseX, Input.mouseY);
+      if(clickPoint) {
+        let clickGridLocation = this.world.translateWorldPosToGridPos(clickPoint);
+        console.log(clickGridLocation);
+        let clickGridWorldPos = this.world.translateGridPosToWorldPos(clickGridLocation);
+        this.world.cube.position.copy(clickGridWorldPos);
+      }
+    })
   }
 
  animationFrame(dt) {
