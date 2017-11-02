@@ -7,10 +7,14 @@ import {
   MeshBasicMaterial,
   MeshNormalMaterial,
   Mesh,
+  HemisphereLight,
   Cylindrical,
   Vector3,
   Raycaster,
 } from "three";
+
+import OBJLoader from "./vendor/OBJLoader.js";
+import MTLLoader from "./vendor/MTLLoader.js";
 
 import { Easing, Interpolation, Tween, autoPlay as autoPlayTweenAnimations } from 'es6-tween/src/index.lite';
 
@@ -21,7 +25,7 @@ const ISO_CAMERA_RADIUS = 1 / Math.cos(ISO_ANGLE);
 
 const GRID_UNIT_SIZE = 10;
 const GRID_WIDTH = 10;
-const GRID_HEIGHT = 5;
+const GRID_HEIGHT = 10;
 
 class World {
   constructor() {
@@ -149,13 +153,36 @@ class World {
     const cubeMaterial = new MeshNormalMaterial();
 
     const cube = new Mesh( cubeGeometry, cubeMaterial );
-    let topLeft = this.translateGridPosToWorldPos({x: 0, y: 0})
+    let topLeft = this.translateGridPosToWorldPos({x: GRID_WIDTH / 2, y: GRID_HEIGHT / 2})
     cube.position.copy(topLeft);
 
+
+    let light = new HemisphereLight( 0x404040, 0xddd384, 2 ); // soft green light
+    this.scene.add( light );
 
     this.scene.add(this.grid);
     this.scene.add(cube);
     this.cube = cube;
+
+
+    let objLoader = new OBJLoader();
+    let mtlLoader = new MTLLoader();
+    mtlLoader.setPath("./assets/");
+    objLoader.setPath("./assets/");
+
+    mtlLoader.load("Lighthouse singly.mtl", materials => {
+      materials.preload();
+      objLoader.setMaterials(materials);
+
+      objLoader.load(
+        "Lighthouse singly.obj",
+        object => {
+          object.children[0].position.setY(-3);
+          object.position.copy(this.translateGridPosToWorldPos({x: 3, y: 3}));
+          this.scene.add(object);
+        },
+      );
+    });
   }
 
   fitToScreen() {

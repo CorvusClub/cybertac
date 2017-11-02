@@ -84,6 +84,11 @@ function css() {
     .pipe(browserSync.stream());
 }
 
+function assets() {
+  return gulp.src("./src/assets/**/*")
+    .pipe(gulp.dest("./dist/assets"));
+}
+
 function reload() {
   if(browserSync.error) {
     browserSync.error = false;
@@ -122,6 +127,7 @@ function watch() {
   gulp.watch("./src/**/*.css", css);
   gulp.watch("./src/**/*.html", gulp.series(html, reload));
   gulp.watch("./src/**/*.js", gulp.series(javascript, reload));
+  gulp.watch("./src/assets/**/*", assets);
 }
 
 function serve() {
@@ -134,9 +140,10 @@ function serve() {
 
 gulp.task(javascript);
 gulp.task(html);
+gulp.task(assets);
 gulp.task(css);
 
-gulp.task("build", gulp.parallel(javascript, html, css));
+gulp.task("build", gulp.parallel(javascript, html, css, assets));
 
 gulp.task(watch);
 
